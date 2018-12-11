@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Nov 25 14:48:03 2018
-
 @author: MLOURE13
 """
 import pandas as pd
@@ -52,7 +51,8 @@ def success_rate(Unique_APP, Unique_CS, df):
     error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR']
     succe_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED']
     start_state=['REQUESTED_START','REQUESTED_DOWNLOAD']
-    abort_state=['ABORTED']
+    abort_state=['ABORTED']    
+    dfData = pd.DataFrame(columns=['APP Count','Start Count','Success Count', 'Error Count', 'Abort Count'])
     
     for app in Unique_APP:
         for i in range(len(df)):
@@ -66,16 +66,22 @@ def success_rate(Unique_APP, Unique_CS, df):
                 elif str(df['CURRENTSTATE'][i]) in abort_state:
                     abort_count+=1
                     
-                app_count=app_count+1
-                #print(app, count, df['APPID'][i])
-        print(app, app_count, error_count, suc_count, start_count, abort_count)
+                app_count=app_count+1                 
+        #print(app, app_count, error_count, suc_count, start_count, abort_count)
+        dfData.loc[str(app),'APP Count'] = int(app_count)
+        dfData.loc[str(app),'Start Count'] = int(start_count)
+        dfData.loc[str(app),'Success Count'] = int(suc_count)
+        dfData.loc[str(app),'Error Count'] = int(error_count)
+        dfData.loc[str(app),'Abort Count'] = int(abort_count)       
+        #print(dfData)
         app_count=0
         error_count=0
         suc_count=0
         start_count=0
         abort_count=0
         dur=(t.time()-start_time)
-        print('It took : ' + str(dur))                              
+        print('It took : ' + str(dur))
+    return dfData                              
 sr=success_rate(Unique_APP, Unique_CS, df)
 
 #print(h)
