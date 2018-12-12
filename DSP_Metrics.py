@@ -80,7 +80,7 @@ def success_rate(Unique_APP, Unique_CS, df):
         start_count=0
         abort_count=0
         dur=(t.time()-start_time)
-        print('It took : ' + str(dur))
+    print('It took : ' + str(dur))
     return dfData                              
 sr=success_rate(Unique_APP, Unique_CS, df)
 
