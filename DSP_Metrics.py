@@ -27,18 +27,19 @@ df['WK']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.st
 df['Date']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y'))
 df['Time']=df['DATEREQUESTED'].map(lambda x: x[9:18]).map(lambda x: x.replace('.',':')).map(lambda x: x.strip())
 df.drop('DATEREQUESTED', axis=1, inplace=True)
-
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'''''''''''''''''''''''''''''''''''''''''' # Unique Lists'''''''''''''''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Unique_APP=df['APPID'].drop_duplicates(keep='first')
 Unique_CS=df['CURRENTSTATE'].drop_duplicates(keep='first')
 Unique_Days=df['Date'].drop_duplicates(keep='first')
 Unique_Weeks=df['WK'].drop_duplicates(keep='first')
 dur=(t.time()-start_time)
 
-#h=App_Succ_Rate('G1265','REQ_START','10 DEC 2018','10:24:49')
+def succ_rate(start_count, succ_count):
+    if start_count>0 and succ_count<=start_count:
+        return succ_count/start_count
+    elif succ_count>start_count:
+        return 0
+    else:
+        return 0
 
 def success_rate(Unique_APP, Unique_CS, df):
     start_time=t.time()
@@ -68,11 +69,13 @@ def success_rate(Unique_APP, Unique_CS, df):
                     
                 app_count=app_count+1                 
         #print(app, app_count, error_count, suc_count, start_count, abort_count)
-        dfData.loc[str(app),'APP Count'] = int(app_count)
-        dfData.loc[str(app),'Start Count'] = int(start_count)
-        dfData.loc[str(app),'Success Count'] = int(suc_count)
-        dfData.loc[str(app),'Error Count'] = int(error_count)
-        dfData.loc[str(app),'Abort Count'] = int(abort_count)       
+        dfData.loc[str(app), 'APP Count'] = int(app_count)
+        dfData.loc[str(app), 'Start Count'] = int(start_count)
+        dfData.loc[str(app), 'Success Count'] = int(suc_count)
+        dfData.loc[str(app), 'Error Count'] = int(error_count)
+        dfData.loc[str(app), 'Abort Count'] = int(abort_count)
+        mx=succ_rate(start_count,suc_count)
+        dfData.loc[str(app), 'Success Rate']= mx#1-(error_count/mx)
         #print(dfData)
         app_count=0
         error_count=0
@@ -84,5 +87,5 @@ def success_rate(Unique_APP, Unique_CS, df):
     return dfData                              
 sr=success_rate(Unique_APP, Unique_CS, df)
 
-#print(h)
+
 print('It took: ' + str(dur) + ' seconds. ')
