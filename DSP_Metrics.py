@@ -103,14 +103,15 @@ def df_SR_WK(Unique_APP, Unique_CS, df, UniqueWeeks):
     for wk in UniqueWeeks:
         for app in Unique_APP:
             for i in range(len(df)):
-                if df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in error_state:
-                    error_count+= 1
-                elif df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in succe_state:
-                    suc_count+=1
-                elif df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in start_state:
-                    start_count+=1
-                elif df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in abort_state:
-                    abort_count+=1
+                if df['APPID'][i] == app:
+                    if str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in error_state:
+                        error_count+= 1
+                    elif str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in succe_state:
+                        suc_count+=1
+                    elif str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in start_state:
+                        start_count+=1
+                    elif str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in abort_state:
+                        abort_count+=1
                                              
         #print(app, app_count, error_count, suc_count, start_count, abort_count)
             rate= succ_rate(start_count,suc_count)            
