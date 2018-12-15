@@ -5,6 +5,7 @@ Created on Sun Nov 25 14:48:03 2018
 """
 import pandas as pd
 import time as t
+import threading 
 
 start_time=t.time()
 
@@ -31,17 +32,18 @@ Unique_APP=df['APPID'].drop_duplicates(keep='first')
 Unique_CS=df['CURRENTSTATE'].drop_duplicates(keep='first')
 Unique_Days=df['Date'].drop_duplicates(keep='first')
 Unique_Weeks=df['WK'].drop_duplicates(keep='first')
-dur=(t.time()-start_time)
 
 def succ_rate(start_count, succ_count):
     if start_count>0 and succ_count<=start_count:
         return succ_count/start_count
     elif succ_count>start_count:
         return 0
+    elif succ_count==0 and start_count==0:
+        return float('NaN')
     else:
         return 0
 
-def success_rate(Unique_APP, Unique_CS, df):
+def df_transformation(Unique_APP, Unique_CS, df):
     start_time=t.time()
     app_count=0
     error_count=0
@@ -73,9 +75,8 @@ def success_rate(Unique_APP, Unique_CS, df):
         dfData.loc[str(app), 'Start Count'] = int(start_count)
         dfData.loc[str(app), 'Success Count'] = int(suc_count)
         dfData.loc[str(app), 'Error Count'] = int(error_count)
-        dfData.loc[str(app), 'Abort Count'] = int(abort_count)
-        mx=succ_rate(start_count,suc_count)
-        dfData.loc[str(app), 'Success Rate']= mx#1-(error_count/mx)
+        dfData.loc[str(app), 'Abort Count'] = int(abort_count)        
+        dfData.loc[str(app), 'Success Rate']= float(succ_rate(start_count,suc_count))        
         #print(dfData)
         app_count=0
         error_count=0
@@ -84,8 +85,58 @@ def success_rate(Unique_APP, Unique_CS, df):
         abort_count=0
         dur=(t.time()-start_time)
     print('It took : ' + str(dur))
-    return dfData                              
-sr=success_rate(Unique_APP, Unique_CS, df)
+    return dfData
 
+def df_SR_WK(Unique_APP, Unique_CS, df, UniqueWeeks):
+    start_time=t.time()    
+    error_count=0
+    suc_count=0
+    start_count=0
+    abort_count=0
+    
+    error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR']
+    succe_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED']
+    start_state=['REQUESTED_START','REQUESTED_DOWNLOAD']
+    abort_state=['ABORTED']    
+    dfData = pd.DataFrame(columns=UniqueWeeks)
+    
+    for wk in UniqueWeeks:
+        for app in Unique_APP:
+            for i in range(len(df)):
+                if df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in error_state:
+                    error_count+= 1
+                elif df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in succe_state:
+                    suc_count+=1
+                elif df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in start_state:
+                    start_count+=1
+                elif df['APPID'][i] == app and str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in abort_state:
+                    abort_count+=1
+                                             
+        #print(app, app_count, error_count, suc_count, start_count, abort_count)
+            rate= succ_rate(start_count,suc_count)            
+            dfData.loc[str(app), wk] = float(rate)      
+            print(app, wk, rate)
+            error_count=0
+            suc_count=0
+            start_count=0
+            abort_count=0
+            dur=(t.time()-start_time)
+    print('It took : ' + str(dur))
+    return dfData
+
+def success_rate_general(df):
+    sorted_sr=df.sort_values(['APP Count', 'Start Count'], ascending=False)
+    sum_app_count=df['APP Count'].sum()
+    print(sum_app_count)
+    return sorted_sr 
+  
+#concu=threading.Thread(target=df_SR, name='Thread1', args=(Unique_APP, Unique_CS, df))
+#concu.start()
+#concu.join()          
+sr=df_transformation(Unique_APP, Unique_CS, df)
+srw=df_SR_WK(Unique_APP, Unique_CS, df, Unique_Weeks)
+se=success_rate_general(sr)
+
+dur=(t.time()-start_time)
 
 print('It took: ' + str(dur) + ' seconds. ')
