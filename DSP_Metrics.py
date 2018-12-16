@@ -20,7 +20,7 @@ class App_Succ_Rate(object):
         return repr([self.app_id, self.app_count])
     
       
-df=pd.read_table('class_big.txt', sep=',', header=0)
+df=pd.read_table('class.txt', sep=',', header=0)
 df['WK']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y')).map(lambda x: pd.datetime.isocalendar(x)[1])
 df['Date']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y'))
 df['Time']=df['DATEREQUESTED'].map(lambda x: x[9:18]).map(lambda x: x.replace('.',':')).map(lambda x: x.strip())
@@ -128,26 +128,33 @@ def success_rate_general(df):
     print(sum_app_count)
     return sorted_sr 
 
+
 def error_analysis(se_succ_rate_summary, Unique_Weeks, df):
     dfErrorDataWeekly = pd.DataFrame(columns=['Error_Count', 'Abort_Count'])
     error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR']
     abort_state=['ABORTED']
     start_state=['REQUESTED_START','REQUESTED_DOWNLOAD']
+    
     count_error=0
     count_abort=0
     count_start=0
     
     for wk in Unique_Weeks:
-        for i in df['CURRENTSTATE']:
-            if i in error_state:
+        for i in range(len(df)):
+            if str(wk)==str(df['WK'][i]) and str(df['CURRENTSTATE'][i]) in error_state:
                 count_error+=1
-            elif i in abort_state:
+            elif str(wk)==str(df['WK'][i]) and str(df['CURRENTSTATE'][i]) in abort_state:
                 count_abort+=1
-            elif i in start_state:
+            elif str(wk)==str(df['WK'][i]) and str(df['CURRENTSTATE'][i]) in start_state:
                 count_start+=1
-        dfErrorDataWeekly.loc[wk, 'Error_Count' ] = count_error/count_start
-        dfErrorDataWeekly.loc[wk, 'Abort_Count' ] = count_abort/count_start
-        dfErrorDataWeekly.loc[wk, 'Start_Requests' ] = count_start
+                    
+        dfErrorDataWeekly.loc[wk, 'Error_Count'] = count_error/count_start
+        dfErrorDataWeekly.loc[wk, 'Abort_Count'] = count_abort/count_start
+        dfErrorDataWeekly.loc[wk, 'Start_Requests'] = count_start
+        
+        count_error=0
+        count_abort=0
+        count_start=0
     
     dfErrorDataWeekly['Succ_Rate']= se_succ_rate_summary.values 
     return dfErrorDataWeekly
