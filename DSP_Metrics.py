@@ -11,19 +11,16 @@ start_time=t.time()
 
 
 class App_Succ_Rate(object):
-    def __init__(self,app_id, cur_state, req_date, req_time):
+    def __init__(self,app_id, app_count):
         self.app_id=app_id
-        self.cur_state=cur_state
-        self.req_date=req_date
-        self.req_time=req_time
-        self.app_data={}
-        self.app_data[str(self.cur_state)]=self.req_date             
+        self.app_count=app_count        
+        #self.app_data[str(self.cur_state)]=self.req_date             
         
     def __repr__(self):
-        return repr([self.app_id, self.cur_state, self.req_date, self.req_time, self.app_data]) 
+        return repr([self.app_id, self.app_count])
     
       
-df=pd.read_table('class.txt', sep=',', header=0)
+df=pd.read_table('class_big.txt', sep=',', header=0)
 df['WK']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y')).map(lambda x: pd.datetime.isocalendar(x)[1])
 df['Date']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y'))
 df['Time']=df['DATEREQUESTED'].map(lambda x: x[9:18]).map(lambda x: x.replace('.',':')).map(lambda x: x.strip())
@@ -87,7 +84,7 @@ def df_transformation(Unique_APP, Unique_CS, df):
     print('It took : ' + str(dur))
     return dfData
 
-def df_SR_WK(Unique_APP, Unique_CS, df, UniqueWeeks):
+def df_SuccessRate_Weekly(Unique_APP, Unique_CS, df, UniqueWeeks):
     start_time=t.time()    
     error_count=0
     suc_count=0
@@ -98,7 +95,8 @@ def df_SR_WK(Unique_APP, Unique_CS, df, UniqueWeeks):
     succe_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED']
     start_state=['REQUESTED_START','REQUESTED_DOWNLOAD']
     abort_state=['ABORTED']    
-    dfData = pd.DataFrame(columns=UniqueWeeks)
+    dfDataWeekly = pd.DataFrame(columns=UniqueWeeks)
+    #dfDataErrorAbort=pd.DataFrame(columns=UniqueWeeks)
     
     for wk in UniqueWeeks:
         for app in Unique_APP:
@@ -113,30 +111,56 @@ def df_SR_WK(Unique_APP, Unique_CS, df, UniqueWeeks):
                     elif str(df['WK'][i])==str(wk) and str(df['CURRENTSTATE'][i]) in abort_state:
                         abort_count+=1
                                              
-        #print(app, app_count, error_count, suc_count, start_count, abort_count)
-            rate= succ_rate(start_count,suc_count)            
-            dfData.loc[str(app), wk] = float(rate)      
-            print(app, wk, rate)
+        #print(app, app_count, error_count, suc_count, start_count, abort_count)                     
+            dfDataWeekly.loc[str(app), wk] = float(succ_rate(start_count,suc_count))            
+            print(app, wk)
             error_count=0
             suc_count=0
             start_count=0
             abort_count=0
             dur=(t.time()-start_time)
     print('It took : ' + str(dur))
-    return dfData
+    return dfDataWeekly
 
 def success_rate_general(df):
     sorted_sr=df.sort_values(['APP Count', 'Start Count'], ascending=False)
     sum_app_count=df['APP Count'].sum()
     print(sum_app_count)
     return sorted_sr 
-  
+
+def error_analysis(se_succ_rate_summary, Unique_Weeks, df):
+    dfErrorDataWeekly = pd.DataFrame(columns=['Error_Count', 'Abort_Count'])
+    error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR']
+    abort_state=['ABORTED']
+    start_state=['REQUESTED_START','REQUESTED_DOWNLOAD']
+    count_error=0
+    count_abort=0
+    count_start=0
+    
+    for wk in Unique_Weeks:
+        for i in df['CURRENTSTATE']:
+            if i in error_state:
+                count_error+=1
+            elif i in abort_state:
+                count_abort+=1
+            elif i in start_state:
+                count_start+=1
+        dfErrorDataWeekly.loc[wk, 'Error_Count' ] = count_error/count_start
+        dfErrorDataWeekly.loc[wk, 'Abort_Count' ] = count_abort/count_start
+        dfErrorDataWeekly.loc[wk, 'Start_Requests' ] = count_start
+    
+    dfErrorDataWeekly['Succ_Rate']= se_succ_rate_summary.values 
+    return dfErrorDataWeekly
+                
+    
 #concu=threading.Thread(target=df_SR, name='Thread1', args=(Unique_APP, Unique_CS, df))
 #concu.start()
 #concu.join()          
 sr=df_transformation(Unique_APP, Unique_CS, df)
-srw=df_SR_WK(Unique_APP, Unique_CS, df, Unique_Weeks)
+app_succ_rate_weekly_table=df_SuccessRate_Weekly(Unique_APP, Unique_CS, df, Unique_Weeks)
 se=success_rate_general(sr)
+succ_rate_summary=app_succ_rate_weekly_table.loc[:,Unique_Weeks].mean()
+error_table= error_analysis(succ_rate_summary, Unique_Weeks, df )
 
 dur=(t.time()-start_time)
 
