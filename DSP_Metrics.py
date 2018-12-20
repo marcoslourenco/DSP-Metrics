@@ -12,14 +12,14 @@ start_time=t.time()
 
 class AppLoad(object):
     def __init__(self,date_req, app_count):
-        self.date_req=date_req
-        self.app_count=app_count        
+        self.date_req = date_req
+        self.app_count = app_count        
         #self.app_data[str(self.cur_state)]=self.req_date             
         
     def __repr__(self):
         return repr([self.date_req, self.app_count])
      
-df=pd.read_table('class_ONEDAYSLIM.txt', sep=',', header=0)
+df=pd.read_table('class_ONEDAY.txt', sep=',', header=0)
 df['WK']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y')).map(lambda x: pd.datetime.isocalendar(x)[1])
 df['Date']=df['DATEREQUESTED'].map(lambda x : x[0:9])#.map(lambda x: pd.datetime.strptime(x,'%d-%b-%y'))
 df['Time']=df['DATEREQUESTED'].map(lambda x: x[9:18]).map(lambda x: x.replace('.',':')).map(lambda x: x.strip())
@@ -29,12 +29,11 @@ Unique_CS=df['CURRENTSTATE'].drop_duplicates(keep='first')
 Unique_Days=df['Date'].drop_duplicates(keep='first')
 #Unique_Weeks=df['WK'].drop_duplicates(keep='first')
     
-def succ_rate(start_count, succ_count):
-    if start_count>0 and succ_count<=start_count:
-        return succ_count/start_count
-    elif succ_count>start_count:
-        return 0
-    elif succ_count==0 and start_count==0:
+
+def succ_rate(finished_count, error_count):
+    if finished_count>0 and error_count>=0:
+        return finished_count/(finished_count+error_count)
+    elif finished_count==0 and error_count==0:
         return float('NaN')
     else:
         return 0
@@ -61,7 +60,7 @@ def df_transformation(Unique_APP, Unique_CS, df):
     
     error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR','DOWNLOAD_JNLP_FAILURE']
     succe_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED', 'DOWNLOAD_JNLP_SUCCESS']
-    start_state=['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED', 'REQUESTED']
+    start_state=['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED']
     abort_state=['ABORTED']    
     dfData = pd.DataFrame(columns=['APP Count','Start Count','Success Count', 'Error Count', 'Abort Count'])
     
@@ -84,7 +83,7 @@ def df_transformation(Unique_APP, Unique_CS, df):
         dfData.loc[str(app), 'Success Count'] = int(suc_count)
         dfData.loc[str(app), 'Error Count'] = int(error_count)
         dfData.loc[str(app), 'Abort Count'] = int(abort_count)        
-        dfData.loc[str(app), 'Success Rate']= float(succ_rate(start_count,suc_count))        
+        dfData.loc[str(app), 'Success Rate']= float(succ_rate(suc_count,error_count))        
         #print(dfData)
         app_count=0
         error_count=0
@@ -104,7 +103,7 @@ def df_SuccessRate_Daily(Unique_APP, Unique_CS, df, Unique_Days):
     
     error_state = ['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR','DOWNLOAD_JNLP_FAILURE']
     succe_state = ['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED', 'DOWNLOAD_JNLP_SUCCESS']
-    start_state = ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED', 'REQUESTED']
+    start_state = ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED']
     abort_state = ['ABORTED']    
     dfDataWeekly = pd.DataFrame(columns=Unique_Days)
     #dfDataErrorAbort=pd.DataFrame(columns=UniqueWeeks)
@@ -123,7 +122,7 @@ def df_SuccessRate_Daily(Unique_APP, Unique_CS, df, Unique_Days):
                         abort_count+=1
                                              
         #print(app, app_count, error_count, suc_count, start_count, abort_count)                     
-            dfDataWeekly.loc[str(app), str(wk)] = float(succ_rate(start_count,suc_count))            
+            dfDataWeekly.loc[str(app), str(wk)] = float(succ_rate(suc_count,error_count))            
             print(app, wk)
             error_count=0
             suc_count=0
@@ -141,14 +140,16 @@ def success_rate_general(df):
 
 
 def error_analysis(se_succ_rate_summary, Unique_Days, df):
-    dfErrorDataDaily = pd.DataFrame(columns=['Error_Count/Starts', 'Abort_Count/Starts'])
+    dfErrorDataDaily = pd.DataFrame(columns=['% Errors', '% Aborts'])
     error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR','DOWNLOAD_JNLP_FAILURE']
     abort_state=['ABORTED']
-    start_state= ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED', 'REQUESTED']
+    start_state= ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED']
+    finished_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED', 'DOWNLOAD_JNLP_SUCCESS']
     
     count_error=0
     count_abort=0
     count_start=0
+    count_finished=0
     
     for wk in Unique_Days:
         for i in range(len(df)):
@@ -158,11 +159,13 @@ def error_analysis(se_succ_rate_summary, Unique_Days, df):
                 count_abort+=1
             elif str(wk)==str(df['Date'][i]) and str(df['CURRENTSTATE'][i]) in start_state:
                 count_start+=1
-        errors = float(error_rate(count_error,count_start))
-        aborts = float(error_rate(count_abort,count_start))    
-        dfErrorDataDaily.loc[str(wk), 'Error_Count/Starts'] = errors
-        dfErrorDataDaily.loc[str(wk), 'Abort_Count/Starts'] = aborts
-        dfErrorDataDaily.loc[str(wk), 'Start_Requests'] = int(count_start)
+            elif str(wk)==str(df['Date'][i]) and str(df['CURRENTSTATE'][i]) in finished_state:
+                count_finished+=1
+        errors=count_error/(count_finished+count_error)
+        aborts=count_abort/(count_finished+count_error)
+        dfErrorDataDaily.loc[str(wk), '% Errors'] = errors
+        dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts
+        dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = count_finished/count_start
         
         newday=dbo.DBOps(str(wk), errors, aborts, count_start, '')
         #newday.get_day('07-AUG-18')
