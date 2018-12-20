@@ -23,6 +23,12 @@ class DBOps(object):
         #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
         #print(c.fetchall())           
        
+    def update(self, suc_rate):
+        with self.conn:
+            c=self.conn.cursor()
+            c.execute('''UPDATE error_table SET suc_rate =:succ_rate''', )
+            self.conn.commit()
+        
     def get_day(self, date_re):
         with self.conn:
             c=self.conn.cursor()
@@ -39,5 +45,5 @@ class DBOps(object):
             #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
             return c.fetchall()
         
-    
+           
                
