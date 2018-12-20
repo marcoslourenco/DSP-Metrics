@@ -143,7 +143,7 @@ def error_analysis(se_succ_rate_summary, Unique_Days, df):
     dfErrorDataDaily = pd.DataFrame(columns=['% Errors', '% Aborts'])
     error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR','DOWNLOAD_JNLP_FAILURE']
     abort_state=['ABORTED']
-    start_state= ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED']
+    start_state= ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED','REQUESTED']
     finished_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED', 'DOWNLOAD_JNLP_SUCCESS']
     
     count_error=0
