@@ -7,7 +7,6 @@ import pandas as pd
 import time as t
 import DBOperations as dbo
 
-
 start_time=t.time()
 
 class AppLoad(object):
@@ -19,7 +18,7 @@ class AppLoad(object):
     def __repr__(self):
         return repr([self.date_req, self.app_count])
      
-df=pd.read_table('class_ONEDAY.txt', sep=',', header=0)
+df=pd.read_table('class_FEWDAYS.txt', sep=',', header=0)
 df['WK']=df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y')).map(lambda x: pd.datetime.isocalendar(x)[1])
 df['Date']=df['DATEREQUESTED'].map(lambda x : x[0:9])#.map(lambda x: pd.datetime.strptime(x,'%d-%b-%y'))
 df['Time']=df['DATEREQUESTED'].map(lambda x: x[9:18]).map(lambda x: x.replace('.',':')).map(lambda x: x.strip())
@@ -37,18 +36,6 @@ def succ_rate(finished_count, error_count):
         return float('NaN')
     else:
         return 0
-    
-    
-def error_rate(error_count, start_count):
-    if start_count>0 and error_count>=0:
-        return error_count/start_count
-    elif start_count==0: 
-        return 0
-    elif error_count==0:
-        return 0
-    else:
-        return 0
-
     
 def df_transformation(Unique_APP, Unique_CS, df):
     start_time=t.time()
@@ -167,9 +154,9 @@ def error_analysis(se_succ_rate_summary, Unique_Days, df):
         dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts
         dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = count_finished/count_start
         
-        newday=dbo.DBOps(str(wk), errors, aborts, count_start, '')
+        newday=dbo.DBOps(str(wk), errors, aborts, count_start, '', 'GFDRS')
         #newday.get_day('07-AUG-18')
-        newday.get_all()
+        newday.get_all('GFDRS')
         
         count_error=0
         count_abort=0
@@ -187,6 +174,7 @@ def error_analysis(se_succ_rate_summary, Unique_Days, df):
 sr=df_transformation(Unique_APP, Unique_CS, df)
 app_succ_rate_daily_table=df_SuccessRate_Daily(Unique_APP, Unique_CS, df, Unique_Days)
 se=success_rate_general(sr)
+
 succ_rate_summary=app_succ_rate_daily_table.loc[:,Unique_Days].mean()
 error_table = error_analysis(succ_rate_summary, Unique_Days, df)
 
