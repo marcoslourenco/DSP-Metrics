@@ -154,9 +154,9 @@ def error_analysis(se_succ_rate_summary, Unique_Days, df):
         dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts
         dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = count_finished/count_start
         
-        newday=dbo.DBOps(str(wk), errors, aborts, count_start, '', 'GFDRS')
+        #newday=dbo.DBOps(str(wk), errors, aborts, count_start, '', 'GFDRS')
         #newday.get_day('07-AUG-18')
-        newday.get_all('GFDRS')
+        #newday.get_all('GFDRS')
         
         count_error=0
         count_abort=0

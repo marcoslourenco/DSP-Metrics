@@ -6,7 +6,7 @@ Created on Wed Dec 19 15:19:21 2018
 """
 import sqlite3 as sq
 
-class DBOps(object):
+class Succ_Rate_DBOps(object):
     def __init__(self,date_req, errors, aborts, start_finished, succ_rate, stand_dev, median_r, skew_r, kurt_r, unb_var, system_name):
         self.date_req=date_req
         self.errors=errors
@@ -29,7 +29,8 @@ class DBOps(object):
             self.conn.commit()
             print('GFDRS Table and DB created/updated')   
             #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
-            #print(c.fetchall()) 
+            #print(c.fetchall())
+            
         elif self.system_name.upper()=='ETIS':
             self.conn = sq.connect(':memory:')
             c=self.conn.cursor()
@@ -40,7 +41,7 @@ class DBOps(object):
             print('ETIS Table and DB created/updated')   
             #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
             #print(c.fetchall())
-            
+                    
        
     def update(self, suc_rate):
         with self.conn:
@@ -70,6 +71,45 @@ class DBOps(object):
                 print(c.fetchall())
                 #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
                 return c.fetchall()
+            
+    
+
+class APP_Rate_DBOps(object):
+    def __init__(self,app_ref, dia, suc_rate,system_name):
+        self.app_ref=app_ref
+        self.dia=dia
+        self.suc_rate=suc_rate 
+        self.system_name=system_name
+               
+        if self.system_name.upper()=='GFDRS':
+            self.conn = sq.connect(':memory:')
+            c=self.conn.cursor()
+            try:
+                c.execute('''CREATE TABLE GFDRS_APP_SR ( date text )''')
+                #c.execute('''INSERT INTO GFDRS_APP_SR VALUES (: app_ref, :date)''', {'app_ref': self.dia , 'date': self.suc_rate })
+                c.execute('''ALTER TABLE GFDRS_APP_SR ADD COLUMN self.app_ref''')
+                self.conn.commit()
+                c.execute('''UPDATE GFDRS_APP_SR SET self.app_ref=self.suc_rate''' )
+                self.conn.commit()
+                print('GFDRS TABLE' + str(self.app_ref) + 'created')   
+                #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
+                #print(c.fetchall())
+            except:
+                c.execute('''INSERT INTO GFDRS_APP_SR VALUES (:self.app_ref, :date)''', {'app_ref': self.dia , 'date': self.suc_rate })
+                self.conn.commit()
+                print('GFDRS TABLE : ' + str(self.app_ref) + ' inserted')
+                
+                
+            
+    def get_all(self, system_name='GFDRS'):
+        with self.conn:
+            if self.system_name.upper()=='GFDRS':
+                c=self.conn.cursor()
+                c.execute('''SELECT * FROM GFDRS_APP_SR''')
+                print(c.fetchall())
+                #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
+                return c.fetchall()
+        
                 
         
            

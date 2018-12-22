@@ -17,7 +17,7 @@ class SuccessRate(object):
         self.loadfile()
         self.df_transformation()        
         self.error_analysis()
-        self.loadDB()
+        self.loadSuccRateDB()
         self.sid=SuccessRate.sid
         SuccessRate.sid += 1
        
@@ -136,7 +136,9 @@ class SuccessRate(object):
                             self.abort_count+=1
                                              
         #print(app, app_count, error_count, suc_count, start_count, abort_count)                     
-                self.dfDataWeekly.loc[str(app), str(wk)] = float(self.succ_rate_daily())            
+                self.dfDataWeekly.loc[str(app), str(wk)] = float(self.succ_rate_daily())
+                #app_load=dbo.APP_Rate_DBOps(str(app),str(wk),float(self.succ_rate_daily()), self.system_name)
+                #app_load.get_all()
                 #print(app, wk)
                 self.error_count=0
                 self.finished_count=0
@@ -213,14 +215,21 @@ class SuccessRate(object):
         print('It took : ' + str(dur))
         return self.dfErrorDataDaily
     
-    def loadDB(self):
+    def loadSuccRateDB(self):
+        print('Loaded: loadSuccRateDB')
+        start_time=t.time()
         self.error_summ = self.dfErrorDataDaily
         for index, column in self.error_summ.iterrows():
             #print(index, *column)            
-            newday=dbo.DBOps(index, *column)
+            newday=dbo.Succ_Rate_DBOps(index, *column)
             #'newday.get_day('07-AUG-18')
-            newday.get_all()            
+            newday.get_all()
+        print('Finished: loadSuccRateDB')
+        dur=(t.time()-start_time)        
+        print('It took : ' + str(dur))
+        return print('Success Rates loaded to DB')
+                
         
       
-gfdrs=SuccessRate('class_FEWDAYS', 'etis')
+gfdrs=SuccessRate('class_FEWDAYS', 'GFDRS')
 
