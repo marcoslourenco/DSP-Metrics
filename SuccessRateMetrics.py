@@ -11,9 +11,9 @@ import DBOperations as dbo
 
 class SuccessRate(object):
     sid = 1
-    def __init__(self, inputfile, systemname):
+    def __init__(self, inputfile, system_name):
         self.inputfile=inputfile
-        self.systemname=systemname
+        self.system_name=system_name.upper()
         self.loadfile()
         self.df_transformation()        
         self.error_analysis()
@@ -183,8 +183,7 @@ class SuccessRate(object):
             self.dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts_daily
             self.dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = count_finished_daily/count_start_daily
             
-            newday=dbo.DBOps(str(wk), errors_daily, aborts_daily, count_start_daily, '',  self.systemname) #
-            newday.get_all(self.systemname)             
+                       
             count_error_daily=0
             count_abort_daily=0
             count_start_daily=0
@@ -206,7 +205,7 @@ class SuccessRate(object):
         self.dfErrorDataDaily['Unbiased_Var']= succ_rate_summary.values
 
         succ_rate_summary=app_succ_rate_daily_table.loc[:,Unique_Days]
-        self.dfErrorDataDaily['System']= self.systemname                    
+        self.dfErrorDataDaily['System']= self.system_name                    
         
         print(self.dfErrorDataDaily)
         print('Finished: error_analysis')
@@ -217,12 +216,11 @@ class SuccessRate(object):
     def loadDB(self):
         self.error_summ = self.dfErrorDataDaily
         for index, column in self.error_summ.iterrows():
-            print(index, column[0],column[1],column[2], column[3], column[4], column[5],column[6], column[7], column[8], column[9])
-            print('\n')
-            #newday=dbo.DBOps(self.error_summ['Day'][x], self.error_summ['% Errors'][x], self.error_summ['% Aborts'][x], self.error_summ['Succ_Rate'][x])
-            #newday.get_day('07-AUG-18')
-            #newday.get_all()            
+            #print(index, *column)            
+            newday=dbo.DBOps(index, *column)
+            #'newday.get_day('07-AUG-18')
+            newday.get_all()            
         
       
-gfdrs=SuccessRate('class_FEWDAYS', 'EtiS')
+gfdrs=SuccessRate('class_FEWDAYS', 'etis')
 
