@@ -7,11 +7,13 @@ Created on Wed Dec 19 15:19:21 2018
 import sqlite3 as sq
 
 class Succ_Rate_DBOps(object):
-    def __init__(self,date_req, errors, aborts, start_finished, succ_rate, stand_dev, median_r, skew_r, kurt_r, unb_var, system_name):
+    def __init__(self,date_req, errors, aborts, start_finished, week_req , month_year, succ_rate, stand_dev, median_r, skew_r, kurt_r, unb_var, system_name):
         self.date_req=date_req
         self.errors=errors
         self.aborts=aborts
         self.start_finished=start_finished
+        self.week_req=week_req
+        self.month_year=month_year
         self.succ_rate=succ_rate
         self.stand_dev=stand_dev
         self.median_r=median_r
@@ -21,23 +23,26 @@ class Succ_Rate_DBOps(object):
         self.system_name=system_name        
         
         if self.system_name.upper()=='GFDRS':
-            #self.conn = sq.connect(':memory:')
-            self.conn = sq.connect('GFDRS_SR.db')
+            self.conn = sq.connect('GFDRS_SUCC_RATE.db')
+            #self.conn = sq.connect('GFDRS_SR.db')
             c=self.conn.cursor()
-            #c.execute('''CREATE TABLE GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
-            c.execute('''INSERT INTO GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE VALUES (:date, :errors, :aborts, :start_finished, :succ_rate, :stand_dev, :median_r, :skew_r, :kurt_r, :unb_var, :system_name)''',{'date': self.date_req, 'errors': self.errors, 
-                      'aborts': self.aborts, 'start_finished': self.start_finished, 'succ_rate': self.succ_rate, 'stand_dev': self.stand_dev, 'median_r': self.median_r, 'skew_r':self.skew_r, 'kurt_r':self.kurt_r, 'unb_var': self.unb_var, 'system_name':system_name })
+            #c.execute('''CREATE TABLE GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
+            c.execute('''INSERT INTO GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE VALUES (:date, :errors, :aborts, :start_finished, :wk, :month_year , :succ_rate, :stand_dev, :median_r, :skew_r, :kurt_r, :unb_var, :system_name)''',{'date': self.date_req, 'errors': self.errors, 
+                      'aborts': self.aborts, 'start_finished': self.start_finished, 'wk': self.week_req ,'month_year': self.month_year, 'succ_rate': self.succ_rate, 'stand_dev': self.stand_dev, 'median_r': self.median_r, 'skew_r':self.skew_r, 'kurt_r':self.kurt_r, 'unb_var': self.unb_var, 'system_name':system_name })
             self.conn.commit()
-            print('GFDRS Table and DB created/updated')   
+            print('GFDRS Table and DB created/updated')
+            
             #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
             #print(c.fetchall())
             
         elif self.system_name.upper()=='ETIS':
-            self.conn = sq.connect(':memory:')
+            #self.conn = sq.connect(':memory:')
+            self.conn = sq.connect('ETIS_SUCC_RATE.db')
             c=self.conn.cursor()
-            c.execute('''CREATE TABLE ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
-            c.execute('''INSERT INTO ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE VALUES (:date, :errors, :aborts, :start_finished, :succ_rate, :stand_dev, :median_r, :skew_r, :kurt_r, :unb_var, :system_name)''',{'date': self.date_req, 'errors': self.errors, 
-                      'aborts': self.aborts, 'start_finished': self.start_finished, 'succ_rate': self.succ_rate, 'stand_dev': self.stand_dev, 'median_r': self.median_r, 'skew_r':self.skew_r, 'kurt_r':self.kurt_r, 'unb_var': self.unb_var, 'system_name':system_name })
+            c.execute('''CREATE TABLE ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
+            c.execute('''INSERT INTO ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE VALUES (:date, :errors, :aborts, :start_finished, :wk, :month_year , :succ_rate, :stand_dev, :median_r, :skew_r, :kurt_r, :unb_var, :system_name)''',{'date': self.date_req, 'errors': self.errors, 
+                      'aborts': self.aborts, 'start_finished': self.start_finished, 'wk': self.week_req ,'month_year': self.month_year, 'succ_rate': self.succ_rate, 'stand_dev': self.stand_dev, 'median_r': self.median_r, 'skew_r':self.skew_r, 'kurt_r':self.kurt_r, 'unb_var': self.unb_var, 'system_name':system_name })
+            
             self.conn.commit()
             print('ETIS Table and DB created/updated')   
             #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})

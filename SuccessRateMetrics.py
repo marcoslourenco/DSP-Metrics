@@ -186,8 +186,11 @@ class SuccessRate(object):
             self.dfErrorDataDaily.loc[str(wk), '% Errors'] = errors_daily
             self.dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts_daily
             self.dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = count_finished_daily/count_start_daily
+            self.dfErrorDataDaily.loc[str(wk), 'WK'] = str(self.df['WK'][i])
+            month_year=str(self.df['Date'][i])
+            month_year=month_year[3:9]
+            self.dfErrorDataDaily.loc[str(wk), 'Month_Year'] = month_year
             
-                       
             count_error_daily=0
             count_abort_daily=0
             count_start_daily=0
@@ -209,7 +212,7 @@ class SuccessRate(object):
         self.dfErrorDataDaily['Unbiased_Var']= succ_rate_summary.values
 
         succ_rate_summary=app_succ_rate_daily_table.loc[:,Unique_Days]
-        self.dfErrorDataDaily['System']= self.system_name                    
+        self.dfErrorDataDaily['System']= self.system_name               
         
         print(self.dfErrorDataDaily)
         print('Finished: error_analysis')
@@ -229,10 +232,8 @@ class SuccessRate(object):
         print('Finished: loadSuccRateDB')
         dur=(t.time()-start_time)        
         print('It took : ' + str(dur))
-        return print('Success Rates loaded to DB')
-    
-         
+        return print('Success Rates loaded to DB')         
         
       
-gfdrs=SuccessRate('GFDRS_NEW', 'GFDRS')
+gfdrs=SuccessRate('ETIS_AUG', 'ETIS')
 
