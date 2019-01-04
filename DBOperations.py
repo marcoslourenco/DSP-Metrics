@@ -39,7 +39,7 @@ class Succ_Rate_DBOps(object):
             #self.conn = sq.connect(':memory:')
             self.conn = sq.connect('ETIS_SUCC_RATE.db')
             c=self.conn.cursor()
-            c.execute('''CREATE TABLE ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
+            #c.execute('''CREATE TABLE ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
             c.execute('''INSERT INTO ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE VALUES (:date, :errors, :aborts, :start_finished, :wk, :month_year , :succ_rate, :stand_dev, :median_r, :skew_r, :kurt_r, :unb_var, :system_name)''',{'date': self.date_req, 'errors': self.errors, 
                       'aborts': self.aborts, 'start_finished': self.start_finished, 'wk': self.week_req ,'month_year': self.month_year, 'succ_rate': self.succ_rate, 'stand_dev': self.stand_dev, 'median_r': self.median_r, 'skew_r':self.skew_r, 'kurt_r':self.kurt_r, 'unb_var': self.unb_var, 'system_name':system_name })
             

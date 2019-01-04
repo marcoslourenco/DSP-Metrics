@@ -14,8 +14,8 @@ with conn:
     c.execute('''SELECT * FROM GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE''')
     print(c.fetchall())
 
-#conn = sq.connect('GFDRS_SUCC_RATE.db')
+#conn = sq.connect('ETIS_SUCC_RATE.db')
 #conn = sq.connect('GFDRS_SR.db')
 #c=conn.cursor()
-#c.execute('''CREATE TABLE GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
+#c.execute('''CREATE TABLE ETIS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
 #conn.commit()
