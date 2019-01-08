@@ -31,11 +31,14 @@ class SuccessRate(object):
         self.df['WK']=self.df['DATEREQUESTED'].map(lambda x : x[0:9]).map(lambda x: pd.datetime.strptime(x,'%d-%b-%y')).map(lambda x: pd.datetime.isocalendar(x)[1])
         self.df['Date']=self.df['DATEREQUESTED'].map(lambda x : x[0:9])#.map(lambda x: pd.datetime.strptime(x,'%d-%b-%y'))
         self.df['Time']=self.df['DATEREQUESTED'].map(lambda x: x[9:18]).map(lambda x: x.replace('.',':')).map(lambda x: x.strip())
-        self.df.drop('DATEREQUESTED', axis=1, inplace=True)
+        self.df.drop('DATEREQUESTED', axis=1, inplace=True)        
         self.Unique_APP=self.df['APPID'].drop_duplicates(keep='first')
         self.Unique_CS=self.df['CURRENTSTATE'].drop_duplicates(keep='first')
         self.Unique_Days=self.df['Date'].drop_duplicates(keep='first')
         #self.Unique_Weeks=self.df['WK'].drop_duplicates(keep='first')
+        self.UniqueVINs=self.df['VIN'].drop_duplicates(keep='first')
+        self.UniqueDealers=self.df['DEALERCODE'].drop_duplicates(keep='first')
+        
         print('Finished: loadfile')
         dur=(t.time()-start_time)
         print('It took : ' + str(dur))
@@ -170,7 +173,8 @@ class SuccessRate(object):
         count_abort_daily=0
         count_start_daily=0
         count_finished_daily=0
-    
+        
+           
         for wk in self.Unique_Days:
             for i in range(len(self.df)):
                 if str(wk)==str(self.df['Date'][i]) and str(self.df['CURRENTSTATE'][i]) in error_state:
@@ -193,7 +197,7 @@ class SuccessRate(object):
             #self.dfErrorDataDaily.loc[str(wk), 'WK'] = str(self.df['WK'][i])
             #month_year=str(self.df['Date'][i])
             #month_year=month_year[3:9]          
-            
+            dbo.Volume_DB_Ops(str(self.system_name),str(wk), len(self.UniqueVINs), len(self.UniqueDealers))
             count_error_daily=0
             count_abort_daily=0
             count_start_daily=0
@@ -216,7 +220,8 @@ class SuccessRate(object):
 
         succ_rate_summary=app_succ_rate_daily_table.loc[:,Unique_Days]
         self.dfErrorDataDaily['System']= self.system_name               
-        
+        #dbo.Volume_DB_Ops(str(self.system_name),str(wk), len(self.UniqueVINs), len(self.UniqueDealers))
+                       
         print(self.dfErrorDataDaily)
         print('Finished: error_analysis')
         dur=(t.time()-start_time)        
