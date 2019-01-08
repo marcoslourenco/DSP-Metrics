@@ -7,6 +7,7 @@ Created on Sat Dec 22 21:27:13 2018
 
 import sqlite3 as sq
 
+
 conn = sq.connect('GFDRS_SUCC_RATE.db')
 with conn:
     c=conn.cursor()

@@ -183,17 +183,16 @@ class SuccessRate(object):
                     count_finished_daily+=1
             errors_daily=count_error_daily/(count_finished_daily+count_error_daily)
             aborts_daily=count_abort_daily/(count_finished_daily+count_error_daily)
-            self.dfErrorDataDaily.loc[str(wk), '% Errors'] = errors_daily*100
-            self.dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts_daily*100
-            self.dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = (count_finished_daily/count_start_daily)*100
+            self.dfErrorDataDaily.loc[str(wk), '% Errors'] = errors_daily
+            self.dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts_daily
+            self.dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = (count_finished_daily/count_start_daily)
             self.dfErrorDataDaily.loc[str(wk), 'WK'] = str(self.df['WK'][i])
             month_year=str(wk)
             month_year=month_year[3:9]
             self.dfErrorDataDaily.loc[str(wk), 'Month_Year'] = month_year
             #self.dfErrorDataDaily.loc[str(wk), 'WK'] = str(self.df['WK'][i])
             #month_year=str(self.df['Date'][i])
-            #month_year=month_year[3:9]
-           
+            #month_year=month_year[3:9]          
             
             count_error_daily=0
             count_abort_daily=0
@@ -234,10 +233,9 @@ class SuccessRate(object):
             #'newday.get_day('07-AUG-18')
             newday.get_all()
         print('Finished: loadSuccRateDB')
-        dur=(t.time()-start_time)        
+        dur=(t.time()-start_time)         
         print('It took : ' + str(dur))
         return print('Success Rates loaded to DB')         
         
       
-gfdrs=SuccessRate('class_FEWDAYS', 'GFDRS')
-
+gfdrs=SuccessRate('ETIS_JAN', 'ETIS')
