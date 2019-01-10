@@ -16,7 +16,7 @@ with conn:
     print(c.fetchall())
 
 #conn = sq.connect('ETIS_SUCC_RATE.db')
-#conn = sq.connect('GFDRS_VOL.db')
+#conn = sq.connect('ETIS_VOL.db')
 #c=conn.cursor()
-#c.execute('''CREATE TABLE GFDRS_VOL_DAILY_TABLE (date_vol text, system_ref text, VIN integer, dealercode integer  )''')
+#c.execute('''CREATE TABLE ETIS_APP_DAILY_TABLE (appid text, app_count integer, start_count integer, success_count integer, error_count integer, abort_count integer, success_rate float, date_app text, system_name text   )''')
 #conn.commit()

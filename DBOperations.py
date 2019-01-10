@@ -77,9 +77,8 @@ class Succ_Rate_DBOps(object):
                 print(c.fetchall())
                 #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
                 return c.fetchall()
+         
             
-    
-
 class APP_Rate_DBOps(object):
     def __init__(self,app_ref, dia, suc_rate,system_name):
         self.app_ref=app_ref
@@ -163,7 +162,42 @@ class Volume_DB_Ops(object):
                 #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
                 return c.fetchall()
             
+
+class APP_DB_OPS(object):
+    def __init__(self, appid, app_count, start_count, success_count, error_count, abort_count, success_rate, date_app, system_name ):
+        self.appid=appid
+        self.app_count=app_count
+        self.start_count=start_count
+        self.success_count=success_count
+        self.error_count=error_count
+        self.abort_count=abort_count
+        self.success_rate=success_rate
+        self.date_app=date_app        
+        self.system_name=system_name        
                 
-        
-           
-               
+        if self.system_name.upper()=='GFDRS':
+            self.conn = sq.connect('GFDRS_VOL.db')
+            #self.conn = sq.connect('GFDRS_SR.db')
+            c=self.conn.cursor()
+            #c.execute('''CREATE TABLE GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
+            c.execute('''INSERT INTO GFDRS_APP_DAILY_TABLE VALUES (:appid, :app_count, :start_count, :success_count, :error_count,:abort_count , :success_rate , :date_app, :system_name)''',{'appid': self.appid, 'app_count': self.app_count, 
+                      'start_count': self.start_count, 'success_count': self.success_count, 'error_count': self.error_count ,'abort_count': self.abort_count, 'success_rate': self.success_rate, 'date_app': self.date_app, 'system_name': self.system_name })
+            self.conn.commit()
+            print('GFDRS_APP_DAILY_TABLE updated')
+            
+            #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
+            #print(c.fetchall())
+            
+        elif self.system_name.upper()=='ETIS':
+            self.conn = sq.connect('ETIS_VOL.db')
+            #self.conn = sq.connect('GFDRS_SR.db')
+            c=self.conn.cursor()
+            #c.execute('''CREATE TABLE GFDRS_SUCC_RATE_DAILY_SUMMARY_TABLE (date text, errors real, aborts real, start_finished integer, wk integer, month_year text, succ_rate real, stand_dev real, median_r real, skew_r real, kurt_r real, unb_var real, system_name text  )''')
+            c.execute('''INSERT INTO ETIS_APP_DAILY_TABLE VALUES (:appid, :app_count, :start_count, :success_count, :error_count,:abort_count, :success_rate , :date_app, :system_name)''',{'appid': self.appid, 'app_count': self.app_count, 
+                      'start_count': self.start_count, 'success_count': self.success_count, 'error_count': self.error_count ,'abort_count': self.abort_count, 'success_rate': self.success_rate, 'date_app': self.date_app, 'system_name': self.system_name })
+            self.conn.commit()
+            print('ETIS_APP_DAILY_TABLE updated') 
+            #c.execute('''SELECT * FROM error_table WHERE date=:date''',{'date': self.date_req})
+            #print(c.fetchall())
+    
+                     

@@ -18,6 +18,7 @@ class SuccessRate(object):
         self.df_transformation()        
         self.error_analysis()
         self.loadSuccRateDB()
+        self.loadAPP_DATA_DB()
         self.sid=SuccessRate.sid
         SuccessRate.sid += 1
        
@@ -97,7 +98,10 @@ class SuccessRate(object):
             self.dfData.loc[str(app), 'Success Count'] = int(self.app_finished_count)
             self.dfData.loc[str(app), 'Error Count'] = int(self.app_error_count)
             self.dfData.loc[str(app), 'Abort Count'] = int(self.app_abort_count)        
-            self.dfData.loc[str(app), 'Success Rate']= float(self.succ_rate())        
+            self.dfData.loc[str(app), 'Success Rate']= float(self.succ_rate()) 
+            #### Test
+            self.dfData.loc[str(app), 'Date']= str(self.df['Date'][i])
+            
             #print(dfData)
             self.app_count=0
             self.app_error_count=0
@@ -242,5 +246,19 @@ class SuccessRate(object):
         print('It took : ' + str(dur))
         return print('Success Rates loaded to DB')         
         
-      
-gfdrs=SuccessRate('ETIS_JAN', 'ETIS')
+    def loadAPP_DATA_DB(self):
+        print('Loaded: loadAPP_DATA_DB')
+        start_time=t.time()
+        self.app_summ = self.dfData
+        for index, column in self.app_summ.iterrows():
+            #print(index, *column)            
+            dbo.APP_DB_OPS(index, *column, str(self.system_name))            
+            #'newday.get_day('07-AUG-18')
+            
+        print('Finished: loadAPP_DATA_DB')
+        dur=(t.time()-start_time)         
+        print('It took : ' + str(dur))
+        return print('App data loaded to DB') 
+    
+    
+gfdrs=SuccessRate('ETIS_DATA', 'ETIS')
