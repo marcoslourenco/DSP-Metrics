@@ -238,9 +238,9 @@ class SuccessRate(object):
         self.error_summ = self.dfErrorDataDaily
         for index, column in self.error_summ.iterrows():
             #print(index, *column)            
-            newday=dbo.Succ_Rate_DBOps(index, *column)
+            dbo.Succ_Rate_DBOps(index, *column) #####newday=dbo.Succ_Rate_DBOps(index, *column)
             #'newday.get_day('07-AUG-18')
-            newday.get_all()
+            #newday.get_all()
         print('Finished: loadSuccRateDB')
         dur=(t.time()-start_time)         
         print('It took : ' + str(dur))
