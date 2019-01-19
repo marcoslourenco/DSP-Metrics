@@ -50,7 +50,7 @@ class SuccessRate(object):
     
     def succ_rate(self):
         if self.app_finished_count>0 and self.app_error_count>=0:
-            return self.app_finished_count/(self.app_finished_count+self.app_error_count)
+            return self.app_finished_count/(self.app_finished_count+self.app_error_count+self.app_abort_count)
         elif self.app_finished_count==0 and self.app_error_count==0:
             return float('NaN')
         else:
@@ -58,7 +58,7 @@ class SuccessRate(object):
         
     def succ_rate_daily(self):
         if self.finished_count>0 and self.error_count>=0:
-            return self.finished_count/(self.finished_count+self.error_count)
+            return self.finished_count/(self.finished_count+self.error_count+self.abort_count)
         elif self.finished_count==0 and self.error_count==0:
             return float('NaN')
         else:
@@ -75,7 +75,7 @@ class SuccessRate(object):
         print('Loaded: df_transformation')
         error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR','DOWNLOAD_JNLP_FAILURE']
         succe_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED', 'DOWNLOAD_JNLP_SUCCESS']
-        start_state=['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED']
+        start_state=['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED', 'REQUESTED']
         abort_state=['ABORTED']    
         self.dfData = pd.DataFrame(columns=['APP Count','Start Count','Success Count', 'Error Count', 'Abort Count'])
     
@@ -124,7 +124,7 @@ class SuccessRate(object):
         print('Loaded: df_SuccessRate_Daily')
         error_state = ['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR','DOWNLOAD_JNLP_FAILURE']
         succe_state = ['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED', 'DOWNLOAD_JNLP_SUCCESS']
-        start_state = ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED']
+        start_state = ['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED', 'REQUESTED']
         abort_state = ['ABORTED']    
         self.dfDataWeekly = pd.DataFrame(columns=self.Unique_Days)
         #dfDataErrorAbort=pd.DataFrame(columns=UniqueWeeks)
@@ -189,8 +189,8 @@ class SuccessRate(object):
                     count_start_daily+=1
                 elif str(wk)==str(self.df['Date'][i]) and str(self.df['CURRENTSTATE'][i]) in finished_state:
                     count_finished_daily+=1
-            errors_daily=count_error_daily/(count_finished_daily+count_error_daily)
-            aborts_daily=count_abort_daily/(count_finished_daily+count_error_daily)
+            errors_daily=count_error_daily/(count_finished_daily+count_error_daily+count_abort_daily)
+            aborts_daily=count_abort_daily/(count_finished_daily+count_error_daily+count_abort_daily)
             self.dfErrorDataDaily.loc[str(wk), '% Errors'] = errors_daily
             self.dfErrorDataDaily.loc[str(wk), '% Aborts'] = aborts_daily
             self.dfErrorDataDaily.loc[str(wk), '% Finished/Started'] = (count_finished_daily/count_start_daily)
