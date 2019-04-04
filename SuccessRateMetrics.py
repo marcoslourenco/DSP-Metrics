@@ -360,5 +360,81 @@ class DealerSuccRate(SuccessRate):
     def loadSuccRateDB(self):
         print('Dealer: loadSuccRateDB')
 
+class CountrySuccRate(DealerSuccRate):
+    sid = 1
+    def __init__(self, inputfile, system_name):
+        super().__init__(inputfile, system_name)
+        #self.loadfile()
+        #self.df_transformation()
+        #self.load_DEALER_DATA_DB()
+
+    def df_transformation(self):
+        start_time=t.time()
+        self.app_count=0
+        self.app_error_count=0
+        self.app_finished_count=0
+        self.app_start_count=0
+        self.app_abort_count=0
+        DealerSuccRate.sid += 1
+
+        print('Loaded: df_transformation for Country')
+        error_state=['ERROR', 'DOWNLOAD_APPLICATION_FAILURE', 'COMMS_ERROR','DOWNLOAD_JNLP_FAILURE']
+        succe_state=['FINISHED', 'DOWNLOAD_APPLICATION_SUCCESS','INDICTED', 'DOWNLOAD_JNLP_SUCCESS']
+        start_state=['REQUESTED_START','REQUESTED_DOWNLOAD','DOWNLOAD_JNLP_REQUESTED', 'REQUESTED']
+        abort_state=['ABORTED']
+        self.dfData = pd.DataFrame(columns=['APP Count','Start Count','Success Count', 'Error Count', 'Abort Count'])
+
+        for country in self.UniqueCountry:
+            for i in range(len(self.df)):
+                if self.df['Country'][i] == country:
+                    if str(self.df['CURRENTSTATE'][i]) in error_state:
+                        self.app_error_count+= 1
+                    elif str(self.df['CURRENTSTATE'][i]) in succe_state:
+                        self.app_finished_count+=1
+                    elif str(self.df['CURRENTSTATE'][i]) in start_state:
+                        self.app_start_count+=1
+                    elif str(self.df['CURRENTSTATE'][i]) in abort_state:
+                        self.app_abort_count+=1
+
+                    self.app_count=self.app_count+1
+                #print(app, app_count, error_count, suc_count, start_count, abort_count)
+            self.dfData.loc[str(country), 'APP Count'] = int(self.app_count)
+            self.dfData.loc[str(country), 'Start Count'] = int(self.app_start_count)
+            self.dfData.loc[str(country), 'Success Count'] = int(self.app_finished_count)
+            self.dfData.loc[str(country), 'Error Count'] = int(self.app_error_count)
+            self.dfData.loc[str(country), 'Abort Count'] = int(self.app_abort_count)
+            self.dfData.loc[str(country), 'Success Rate']= float(self.succ_rate())
+            #### Test
+            self.dfData.loc[str(country), 'Date']= str(self.df['Date'][i])
+
+            #print(dfData)
+            self.app_count=0
+            self.app_error_count=0
+            self.app_finished_count=0
+            self.app_start_count=0
+            self.app_abort_count=0
+        dur=(t.time()-start_time)
+        print('Finished: df_transformation for Country')
+        print('It took : ' + str(dur))
+        return self.dfData
+
+    def load_DATA_DB(self):
+        print('Loaded: load_COUNTRY_DATA_DB')
+        start_time=t.time()
+        self.app_summ = self.dfData
+        if self.system_name=='GFDRS':
+            for index, column in self.app_summ.iterrows():
+                #print(index, *column)
+                dbo.COUNTRY_DB_OPS(index, *column, str(self.system_name))
+                #'newday.get_day('07-AUG-18')
+            print('Finished: load_COUNTRY_DATA_DB')
+            dur=(t.time()-start_time)
+            print('It took : ' + str(dur))
+        else:
+            print('ETIS: No Country data for ETIS')
+        return print('load_COUNTRY_DATA_DB')
+
 gfdrs=SuccessRate('GFDRS_DATA', 'GFDRS')
 gfdrs_dealers=DealerSuccRate('GFDRS_DATA', 'GFDRS')
+gfdrs_country=CountrySuccRate('GFDRS_DATA', 'GFDRS')
+
